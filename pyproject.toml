@@ -5,7 +5,7 @@ description = "Agemo is a GUI for Hyprpaper"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "pillow>=11.2.1",
+    "pillow>=13.0.0",
     "pyqt6>=6.9.1",
     "requests>=2.32.5",
 ]

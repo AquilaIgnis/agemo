@@ -1,6 +1,6 @@
 [project]
 name = "agemo"
-version = "2.8.0"
+version = "2.8.1"
 description = "Agemo is a GUI for Hyprpaper"
 readme = "README.md"
 requires-python = ">=3.13"

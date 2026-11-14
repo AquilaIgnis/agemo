@@ -40,7 +40,7 @@ if dev_mode:
     print("Running DEV")
 
 
-__version__ = "2.8.0"
+__version__ = "2.8.1"
 # returning strings for old os module
 ROOT_DIR = get_root()
 ASSETS_DIR = (RESOURCE_DIR if FROZEN else RESOURCE_DIR.parent) / "assets"

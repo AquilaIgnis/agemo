@@ -11,6 +11,12 @@ replace = __version__ = "{new_version}"
 search = version = "{current_version}"
 replace = version = "{new_version}"
 
+[bumpversion:file:uv.lock]
+search = name = "agemo"
+    version = "{current_version}"
+replace = name = "agemo"
+    version = "{new_version}"
+
 [bumpversion:file:agemo.desktop]
 search = Version={current_version}
 replace = Version={new_version}

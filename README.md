@@ -22,7 +22,11 @@ Hyprpaper 0.8.0 introduced breaking changes use an older version from releases i
 
 ## Install
 
-(recommended method) <br>
+[ Get the app image ](https://github.com/AquilaIgnis/agemo/releases/latest)
+
+or
+
+<br>
 clone the repo and run the script don’t need sudo
 
 ```

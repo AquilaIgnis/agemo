@@ -9,7 +9,7 @@ from pathlib import Path
 
 from PIL import Image
 
-from constants import CACHE_FILE, get_logger
+from constants import CACHE_FILE, get_host_env, get_logger
 
 THUMB_ROOT = os.path.expanduser("~/.cache/thumbnails")
 SIZES = ("normal", "large", "x-large", "xx-large")
@@ -133,6 +133,7 @@ def call_xdg(img_dir: str, size: int = 256):
                 subprocess.run(
                     ["gdk-pixbuf-thumbnailer", "--size", str(size), img_path, out],
                     check=False,
+                    env=get_host_env(),
                 )
 
             #  glycin-thumbnailer -i file://$(pwd)/1.png -o /tmp/new.png -s 256
@@ -146,7 +147,8 @@ def call_xdg(img_dir: str, size: int = 256):
                         out,
                         "-s",
                         str(size),
-                    ]
+                    ],
+                    env=get_host_env(),
                 )
 
 

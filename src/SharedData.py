@@ -2,7 +2,7 @@ import json
 import os
 import subprocess
 
-from constants import ROOT_DIR, get_logger
+from constants import ROOT_DIR, get_host_env, get_logger
 
 logg = get_logger(__name__)
 
@@ -53,7 +53,10 @@ class SharedData:
     def check_monitors(self):
         try:
             hypr_ctl = subprocess.run(
-                ["hyprctl", "monitors", "-j"], stdout=subprocess.PIPE, text=True
+                ["hyprctl", "monitors", "-j"],
+                stdout=subprocess.PIPE,
+                text=True,
+                env=get_host_env(),
             )
             hold = json.loads(hypr_ctl.stdout)
 

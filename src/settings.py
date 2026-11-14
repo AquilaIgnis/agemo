@@ -11,7 +11,7 @@ import PyQt6.QtWidgets as qt
 from PyQt6.QtCore import QProcess, QProcessEnvironment, QSize, Qt
 from PyQt6.QtGui import QIcon
 
-from constants import ASSETS_DIR, ROOT_DIR, get_logger
+from constants import ASSETS_DIR, FROZEN, RESOURCE_DIR, get_host_env, get_logger
 from SharedData import SharedData
 
 logg = get_logger(__name__)
@@ -66,7 +66,7 @@ class SettingsWindow(qt.QWidget):
 
     # UI
     def initUI(self):
-        script_path = os.path.join(ROOT_DIR, "style.qss")
+        script_path = os.path.join(RESOURCE_DIR, "style.qss")
         with open(script_path, "r") as f:
             qss = f.read()
 
@@ -134,14 +134,19 @@ class SettingsWindow(qt.QWidget):
                 json.dump(self.shared_data.data, f, indent=4)
 
             # build a QProcessEnvironment
-            env = QProcessEnvironment.systemEnvironment()
+            env = QProcessEnvironment()
+            for key, value in get_host_env().items():
+                env.insert(key, value)
             env.insert("QT_SCALE_FACTOR", self.shared_data.data["dpi"])
+            if FROZEN:
+                env.insert("PYINSTALLER_RESET_ENVIRONMENT", "1")
 
             # make a QProcess instance
             proc = QProcess(self)
             proc.setProcessEnvironment(env)
-            proc.setProgram(sys.executable)
-            proc.setArguments(sys.argv)
+            appimage = os.environ.get("APPIMAGE") if FROZEN else None
+            proc.setProgram(appimage or sys.executable)
+            proc.setArguments(sys.argv[1:] if FROZEN else sys.argv)
             proc.setWorkingDirectory(os.getcwd())
 
             # restart UI

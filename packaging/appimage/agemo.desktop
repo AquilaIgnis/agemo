@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Agemo
+Comment=Wallpaper GUI for Hyprpaper
+Exec=agemo
+Icon=agemo
+Terminal=false
+Categories=Utility;
+Keywords=wallpaper;hyprpaper;

@@ -9,7 +9,7 @@ import time
 import PyQt6.QtWidgets as qt
 from PyQt6.QtCore import Qt
 
-from constants import get_logger
+from constants import get_host_env, get_logger
 from HyprParser import HyprpaperWrite
 from SharedData import SharedData
 
@@ -73,8 +73,8 @@ class BottomBar(qt.QWidget):
 
             try:
                 writer.hypr_write(self.shared_data.selectedImage, self.current_monitor)
-                subprocess.call(["kill", "hyprpaper"])
+                subprocess.call(["kill", "hyprpaper"], env=get_host_env())
                 time.sleep(1)
-                subprocess.Popen(["hyprpaper"])
+                subprocess.Popen(["hyprpaper"], env=get_host_env())
             except FileNotFoundError:
                 logger.error("⛔ Hyprpaper is not installed")

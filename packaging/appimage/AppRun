@@ -1,0 +1,6 @@
+#!/bin/sh
+set -eu
+
+appdir="${APPDIR:-$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)}"
+unset QT_PLUGIN_PATH QT_QPA_PLATFORM_PLUGIN_PATH QML2_IMPORT_PATH
+exec "$appdir/usr/bin/agemo" "$@"

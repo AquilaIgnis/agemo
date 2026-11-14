@@ -13,7 +13,7 @@ import PyQt6.QtWidgets as qt
 import helper
 import xdgthumbails
 from BottomBar import BottomBar
-from constants import ROOT_DIR, get_logger
+from constants import RESOURCE_DIR, ROOT_DIR, get_logger
 from Gallery import Gallery
 from SharedData import SharedData
 from splashWindow import SplashScreen
@@ -105,7 +105,7 @@ def main():
     if data["dpi"]:
         os.environ["QT_SCALE_FACTOR"] = str(data["dpi"])
 
-    script_path = os.path.join(ROOT_DIR, "style.qss")
+    script_path = os.path.join(RESOURCE_DIR, "style.qss")
     with open(script_path, "r") as f:
         qss = f.read()
 

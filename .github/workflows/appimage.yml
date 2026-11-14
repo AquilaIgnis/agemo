@@ -1,0 +1,93 @@
+name: AppImage
+
+on:
+  push:
+    tags:
+      - '**'
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Tag, branch, or commit to build (blank uses the selected workflow ref)'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: appimage-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.event_name != 'push' || !github.event.deleted
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+          persist-credentials: false
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@94527f2e458b27549849d47d273a16bec83a01e9 # v7
+        with:
+          version: '0.13.5'
+          python-version: '3.13'
+
+      - name: Install build and Qt dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y \
+            desktop-file-utils zsync patchelf \
+            libegl1 libgl1 libopengl0 libfontconfig1 libdbus-1-3 \
+            libwayland-client0 libwayland-cursor0 libwayland-egl1 \
+            libxkbcommon0 libxkbcommon-x11-0 libxcb-cursor0 \
+            libxcb-icccm4 libxcb-image0 libxcb-keysyms1 \
+            libxcb-render-util0 libxcb-shape0 libxcb-xinerama0
+
+      - name: Install locked Python dependencies
+        run: uv sync --locked --group appimage
+
+      - name: Build AppImage and zsync
+        run: uv run --locked --group appimage bash packaging/appimage/build.sh
+
+      - name: Smoke test AppImage and update metadata
+        run: uv run --locked --group appimage python packaging/appimage/smoke-test.py dist/Agemo-x86_64.AppImage
+
+      - name: Upload AppImage and zsync
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: Agemo-x86_64
+          path: |
+            dist/Agemo-x86_64.AppImage
+            dist/Agemo-x86_64.AppImage.zsync
+          if-no-files-found: error
+          compression-level: 0
+
+  release:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    needs: build
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Download AppImage and zsync
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          name: Agemo-x86_64
+          path: dist
+
+      - name: Publish release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          if ! gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release create "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" \
+              --verify-tag --title "$RELEASE_TAG" --generate-notes
+          fi
+          gh release upload "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --clobber \
+            dist/Agemo-x86_64.AppImage dist/Agemo-x86_64.AppImage.zsync

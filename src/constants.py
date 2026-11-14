@@ -1,8 +1,11 @@
 import logging
+import os
+import sys
 from pathlib import Path
 
-# check if the path is my dev env or normal .local
-dev_mode = (Path(__file__).parent.parent / ".git").exists()
+RESOURCE_DIR = Path(__file__).resolve().parent
+FROZEN = bool(getattr(sys, "frozen", False))
+dev_mode = not FROZEN and (RESOURCE_DIR.parent / ".git").exists()
 
 
 def get_logger(name: str) -> logging.Logger:
@@ -13,10 +16,24 @@ def get_logger(name: str) -> logging.Logger:
 
 def get_root():
     if dev_mode:
-        return Path(__file__).parent
+        return RESOURCE_DIR
     else:
-        root_dir = Path.home() / ".local/share/agemo/src/"
+        data_home = Path(os.environ.get("XDG_DATA_HOME") or Path.home() / ".local/share")
+        root_dir = data_home / "agemo/src"
+        root_dir.mkdir(parents=True, exist_ok=True)
         return root_dir
+
+
+def get_host_env():
+    """Keep bundled libraries out of Hyprland and thumbnailer subprocesses."""
+    env = os.environ.copy()
+    if FROZEN:
+        original = env.get("LD_LIBRARY_PATH_ORIG")
+        if original is None:
+            env.pop("LD_LIBRARY_PATH", None)
+        else:
+            env["LD_LIBRARY_PATH"] = original
+    return env
 
 
 if dev_mode:
@@ -26,6 +43,6 @@ if dev_mode:
 __version__ = "2.8.0"
 # returning strings for old os module
 ROOT_DIR = get_root()
-ASSETS_DIR = Path((ROOT_DIR)).parent / "assets"
+ASSETS_DIR = (RESOURCE_DIR if FROZEN else RESOURCE_DIR.parent) / "assets"
 GLOBAL_VERSION = __version__
-CACHE_FILE = Path(get_root() / "xdgcache.json")
+CACHE_FILE = ROOT_DIR / "xdgcache.json"
